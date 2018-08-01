@@ -1,0 +1,10 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+  // https://mvnrepository.com/artifact/net.sf.jwordnet/jwnl
+  compile group: 'net.sf.extjwnl', name: 'extjwnl', version: '1.9.4'
+}
