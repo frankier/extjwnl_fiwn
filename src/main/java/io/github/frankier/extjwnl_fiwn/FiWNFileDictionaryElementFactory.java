@@ -5,6 +5,8 @@ import net.sf.extjwnl.util.factory.Param;
 
 import java.util.Map;
 
+package io.github.frankier.extjwnl_fiwn;
+
 public class FiWNFileDictionaryElementFactory extends PrincetonWN17FileDictionaryElementFactory
 {
     public FiWNFileDictionaryElementFactory(Dictionary dictionary, Map<String, Param> params) {
