@@ -1,11 +1,11 @@
+package io.github.frankier.extjwnl_fiwn;
+
 import net.sf.extjwnl.princeton.data.PrincetonWN17FileDictionaryElementFactory;
 import net.sf.extjwnl.data.*;
 import net.sf.extjwnl.dictionary.Dictionary;
 import net.sf.extjwnl.util.factory.Param;
 
 import java.util.Map;
-
-package io.github.frankier.extjwnl_fiwn;
 
 public class FiWNFileDictionaryElementFactory extends PrincetonWN17FileDictionaryElementFactory
 {
