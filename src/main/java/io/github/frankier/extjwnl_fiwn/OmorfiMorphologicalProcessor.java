@@ -10,6 +10,9 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.*;
 import net.sf.extjwnl.dictionary.Dictionary;
@@ -34,6 +37,21 @@ public class OmorfiMorphologicalProcessor implements MorphologicalProcessor
         posMap.put("SCONJ", POS.ADVERB);
         posMap.put("SYM", POS.NOUN);
     }
+    private static final Pattern lemmaExtract = Pattern.compile("(.*)(_\\d+)?");
+
+    class LemmaPos implements Comparable<LemmaPos>
+    {
+	String lemma;
+	POS pos;
+	int cmpLen;
+	float weight;
+
+	@Override
+	public int compareTo(LemmaPos other) {
+	    int cl = Integer.compare(this.cmpLen, other.cmpLen);
+	    return cl == 0 ? Float.compare(this.weight, other.weight) : cl;
+	}
+    }
 
     public OmorfiMorphologicalProcessor(Dictionary dictionary, Map<String, Param> params) throws IOException
     {
@@ -41,15 +59,6 @@ public class OmorfiMorphologicalProcessor implements MorphologicalProcessor
 
 	this.omorfi = new Omorfi();
 	this.omorfi.loadAll();
-    }
-
-    static public List<String> analysToForms(List<Map<String, String>> analyses)
-    {
-	Comparator<Map<String, String>> cmp = Comparator.comparing(analy -> Float.parseFloat(analy.get("WEIGHT")));
-	analyses.sort(cmp);
-	return analyses.stream().map(analy ->
-	    analy.get("WORD_ID")
-	).collect(Collectors.toList());
     }
 
     public List<String> lookupAllBaseForms(POS pos, String derivation)
@@ -60,22 +69,49 @@ public class OmorfiMorphologicalProcessor implements MorphologicalProcessor
 	} catch (NoTokenizationException e) {
 	    return Arrays.asList(derivation);
 	}
-	List<Map<String, String>> analyses = strAnalyses.stream().map(strAnaly ->
-	    Splitter.on("][")
-		.withKeyValueSeparator(
-		    Splitter.on('=')
-			.limit(2))
+	List<LemmaPos> analyses = strAnalyses.stream().flatMap(strAnaly -> {
+	    List<List<String>> bits = StreamSupport.stream(
+		Splitter
+		.on("][")
 		.split(strAnaly.subSequence(1, strAnaly.length() - 1))
-	).collect(Collectors.toList());
+		.spliterator(),
+		false
+	    )
+	    .map(kv -> Splitter.on('=').limit(2).splitToList(kv))
+	    .collect(Collectors.toList());
+	    List<LemmaPos> lemmaPoses = new ArrayList();
+	    int cmpLen = 0;
+	    float weight = Float.POSITIVE_INFINITY;
+	    for (List<String> bit: bits) {
+		if (bit.get(0) == "WORD_ID") {
+		    LemmaPos lp = new LemmaPos();
+		    lp.lemma = this.lemmaExtract.matcher(bit.get(1)).group(1);
+		    lemmaPoses.add(lp);
+		    cmpLen++;
+		} else if (bit.get(0) == "UPOS") {
+		    lemmaPoses.get(lemmaPoses.size() - 1).pos = this.posMap.get(bit.get(1));
+		} else if (bit.get(0) == "WEIGHT") {
+		    weight = Float.parseFloat(bit.get(1));
+		}
+	    }
+	    for (LemmaPos lp: lemmaPoses) {
+		lp.cmpLen = cmpLen;
+		lp.weight = weight;
+	    }
+	    return lemmaPoses.stream();
+	}).collect(Collectors.toList());
 	// Filter by pos
-	List<Map<String, String>> filteredAnalyses = analyses.stream()
-	    .filter(analy -> this.posMap.get(posMap.get(analy.get("UPOS"))) == pos)
+	List<String> filteredAnalyses = analyses.stream()
+	    .filter(analy -> analy.pos == pos)
+	    .map(analy -> analy.lemma)
 	    .collect(Collectors.toList());
 	if (!filteredAnalyses.isEmpty()) {
-	    return analysToForms(filteredAnalyses);
+	    return filteredAnalyses;
 	} else {
 	    // Make sure not to discard last match
-	    return analysToForms(analyses);
+	    return analyses.stream()
+		.map(analy -> analy.lemma)
+		.collect(Collectors.toList());
 	}
     }
 
