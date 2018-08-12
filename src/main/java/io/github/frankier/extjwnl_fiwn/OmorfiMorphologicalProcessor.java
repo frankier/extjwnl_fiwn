@@ -3,6 +3,7 @@ package io.github.frankier.extjwnl_fiwn;
 import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,17 +22,18 @@ public class OmorfiMorphologicalProcessor implements MorphologicalProcessor
 {
     private Dictionary dictionary;
     private Omorfi omorfi;
-    private static final Map<String, POS> posMap = Map.of(
-        "ADJ", POS.ADJECTIVE,
-        "VERB", POS.VERB,
-        //"AUX", POS.VERB,
-        "ADV", POS.ADVERB,
-        //"PRON", POS.NOUN,
-        //"NUM", POS.ADJECTIVE,
-        "ADP", POS.ADVERB,
-        "SCONJ", POS.ADVERB,
-        "SYM", POS.NOUN
-    );
+    private static final Map<String, POS> posMap = new HashMap<String, POS>();
+    static {
+        posMap.put("ADJ", POS.ADJECTIVE);
+        posMap.put("VERB", POS.VERB);
+        //posMap.put("AUX", POS.VERB);
+        posMap.put("ADV", POS.ADVERB);
+        //posMap.put("PRON", POS.NOUN);
+        //posMap.put("NUM", POS.ADJECTIVE);
+        posMap.put("ADP", POS.ADVERB);
+        posMap.put("SCONJ", POS.ADVERB);
+        posMap.put("SYM", POS.NOUN);
+    }
 
     OmorfiMorphologicalProcessor(Dictionary dictionary, Map<String, Param> params) throws IOException
     {
