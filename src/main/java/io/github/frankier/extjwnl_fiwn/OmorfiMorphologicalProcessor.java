@@ -35,7 +35,7 @@ public class OmorfiMorphologicalProcessor implements MorphologicalProcessor
         posMap.put("SYM", POS.NOUN);
     }
 
-    OmorfiMorphologicalProcessor(Dictionary dictionary, Map<String, Param> params) throws IOException
+    public OmorfiMorphologicalProcessor(Dictionary dictionary, Map<String, Param> params) throws IOException
     {
 	this.dictionary = dictionary;
 
