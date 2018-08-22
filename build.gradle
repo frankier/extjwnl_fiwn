@@ -7,6 +7,6 @@ repositories {
 
 dependencies {
   compile group: 'net.sf.extjwnl', name: 'extjwnl', version: '1.9.4'
-  implementation 'com.github.frankier:omorfi:add-gradle-SNAPSHOT'
+  implementation 'com.github.flammie:omorfi:38931724a83e5c361cf928cdb1afb1673b4fe0e2'
   compile group: 'com.google.guava', name: 'guava', version: '23.5-jre'
 }
